@@ -6,3 +6,8 @@
     font-weight: 300 !important;
     font-size: 13.5px !important;
 }
+
+button:disabled{
+  background-color: rgb(148, 148, 223);
+  color:#000;
+}

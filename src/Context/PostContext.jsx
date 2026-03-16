@@ -9,27 +9,27 @@ export default function PostContextProvider({ children }) {
     token: localStorage.getItem("userToken"),
   };
 
-  async function getAllPosts() {
-    try {
-      let { data } = await axios.get(
-        "https://linked-posts.routemisr.com/posts?limit=50",
-        {
-          headers,
+  // async function getAllPosts() {
+  //   try {
+  //     let { data } = await axios.get(
+  //       "https://linked-posts.routemisr.com/posts?limit=50",
+  //       {
+  //         headers,
                   
-        }
-      );
-      console.log(data);
+  //       }
+  //     );
+  //     console.log(data);
 
-      return data.posts;
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  //     return data.posts;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   async function getSinglePost(id) {
     try {
       let { data } = await axios.get(
-        `https://linked-posts.routemisr.com/posts/${id}`,
+        `/api/posts/${id}`,
         {
           headers,
         }
@@ -43,7 +43,7 @@ export default function PostContextProvider({ children }) {
   async function getUserData() {
     try {
       let { data } = await axios.get(
-        "https://linked-posts.routemisr.com/users/profile-data",
+        "/api/users/profile-data",
         {
           headers,
         }
@@ -57,7 +57,7 @@ export default function PostContextProvider({ children }) {
   async function getUserPosts(id) {
     try {
       let { data } = await axios.get(
-        `https://linked-posts.routemisr.com/users/${id}/posts?limit=50`,
+        `/api/users/${id}/posts?limit=50`,
         {
           headers,
         }
@@ -72,7 +72,7 @@ export default function PostContextProvider({ children }) {
   async function createComments(body) {
     try {
       let { data } = await axios.post(
-        `https://linked-posts.routemisr.com/comments`,
+        `/api/comments`,
         body,
         {
           headers,
@@ -94,7 +94,7 @@ export default function PostContextProvider({ children }) {
   };
     try {
       let { data } = await axios.post(
-        `https://linked-posts.routemisr.com/posts`,
+        `/api/posts`,
         formData,
         {
           headers,
@@ -115,15 +115,15 @@ export default function PostContextProvider({ children }) {
   };
     try {
       let { data } = await axios.delete(
-        `https://linked-posts.routemisr.com/posts/${id}`,
+        `/api/posts/${id}`,
         {
           headers,
         }
       );
 
       console.log(data, " del post");
-      toast.success("post Successfully created !");
-      return data.comments;
+      // toast.success("post Successfully created !");
+      // return data.comments;
     } catch (error) {
       toast.error("post not created !");
       console.log(error);
@@ -132,7 +132,7 @@ export default function PostContextProvider({ children }) {
   return (
     <PostContext.Provider
       value={{
-        getAllPosts,
+        // getAllPosts,
         getUserData,
         createComments,
         getUserPosts,

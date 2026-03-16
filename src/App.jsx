@@ -8,8 +8,11 @@ import Layout from './Components/Layout/Layout.jsx'
 import Home from './Components/Home/Home.jsx'
 import ProtectedRoutes from './Components/ProtectedRoutes/ProtectedRoutes.jsx'
 import ProtectedAuth from './Components/ProtectedAuth/ProtectedAuth.jsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 function App() {
+
+  const queryClient = new QueryClient();
 
   let router = createBrowserRouter([
     {path: '', element: <Layout/> , children: [
@@ -23,10 +26,12 @@ function App() {
     ]}
   ])
   return (
-    <>
-    <RouterProvider router={router}></RouterProvider>
+      <>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router}></RouterProvider>
+      </QueryClientProvider>
     </>
   ) 
 }
 
-export default App
+export default App;
