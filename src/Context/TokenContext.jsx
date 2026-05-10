@@ -10,7 +10,7 @@ import { createContext, useEffect, useState } from "react";
     useEffect(() => {
       if(localStorage.getItem("userToken"))
         setToken(localStorage.getItem("userToken"));
-    })
+    }, []);
     
     return (
                 <TokenContext.Provider value={{token , setToken}}>

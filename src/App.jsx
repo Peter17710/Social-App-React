@@ -1,5 +1,6 @@
 import './App.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import PostDetails from './Components/PostDetails/PostDetails.jsx'
 import Login from './Components/Login/Login.jsx'
 import Register from './Components/Register/Register.jsx'
 import UserPosts from './Components/UserPosts/UserPosts.jsx'
@@ -18,6 +19,8 @@ function App() {
     {path: '', element: <Layout/> , children: [
       {index:true , element:<ProtectedRoutes><Home/></ProtectedRoutes>},
       {path:'userPosts' , element:<ProtectedRoutes><UserPosts/></ProtectedRoutes>},
+      {path: 'postDetails/:id', element: <ProtectedRoutes><PostDetails/></ProtectedRoutes>}, // ← add this
+
 
       {path:'login' , element:<ProtectedAuth><Login/></ProtectedAuth>},
       {path:'register' , element:<ProtectedAuth><Register/></ProtectedAuth>},

@@ -1,148 +1,193 @@
 import React from "react";
-import styles from "./Register.module.css";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function Register() {
-  // joi , formik , useForm ( yup , zod )
-  let navigate = useNavigate();
-  let schema = z
+  const navigate = useNavigate();
+
+  const schema = z
     .object({
-      name: z.string().nonempty("Name is Required"),
-      email: z.string().email("Email not Valid").nonempty("Email is Required"),
+      name: z.string().nonempty("Name is required"),
+      username: z.string().nonempty("Username is required").min(3, "Username must be at least 3 characters"),
+      email: z.string().email("Email is not valid").nonempty("Email is required"),
       password: z
         .string()
-        .nonempty("Password is Required")
-        .regex(/^[A-Z][a-z0-9]{3,8}/, "Password must start with capital char"),
-      rePassword: z
-        .string()
-        .nonempty("Repassword is Required")
-        .regex(/^[A-Z][a-z0-9]{3,8}/, "Password must start with capital char"),
-      dateOfBirth: z.string().nonempty("Date is Required"),
-      gender: z.enum(["male", "female"]),
+        .nonempty("Password is required")
+        .regex(
+          /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])/,
+          "Must have uppercase, lowercase, number & special character (@$!%*?&)"
+        ),
+      rePassword: z.string().nonempty("Please confirm your password"),
+      dateOfBirth: z.string().nonempty("Date of birth is required"),
+      gender: z.enum(["male", "female"], { message: "Please select a gender" }),
     })
-
-    .refine((data) => data.password == data.rePassword, {
-      message: "Passwords Not match",
+    .refine((data) => data.password === data.rePassword, {
+      message: "Passwords don't match",
       path: ["rePassword"],
     });
-  let {
+
+  const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm({
-    resolver: zodResolver(schema),
-  });
+  } = useForm({ resolver: zodResolver(schema) });
 
   async function onSubmit(values) {
     try {
-      console.log(values);
-      let { data } = await axios.post(
-        "/api/users/signup",
-        values
-      );
-      console.log(data);
-      // login
-      if (data.message == "success") {
+      const { data } = await axios.post("/api/users/signup", values);
+      if (data.message === "success") {
         navigate("/login");
       }
     } catch (error) {
-      console.log(error.response.data.error);
-      setError("root", { message: error.response.data.error });
+  console.log(error.response?.data); // ← add this line
+  setError("root", {
+    message: error.response?.data?.message || "Registration failed. Please try again.",
+  });
+}
     }
-  }
+  
+
   return (
-    <>
-      <div className="w-1/2 mx-auto shadow-lg p-5 my-5">
-        <h1 className="text-blue-800 font-bold text-2xl my-4">Register Now</h1>
-        {errors.root && <p className="text-red-400">{errors.root.message}</p>}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-sm border border-gray-100 p-8">
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <input
-            {...register("name")}
-            type="text"
-            placeholder="Type Your Name..."
-            className="input focus:outline-0 w-full my-2 rounded-xl"
-          />
-          {errors.name && <p className="text-red-400">{errors.name.message}</p>}
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="Type Your Email..."
-            className="input focus:outline-0 w-full my-2 rounded-xl"
-          />
-          {errors.email && (
-            <p className="text-red-400">{errors.email.message}</p>
-          )}
-          <input
-            {...register("password")}
-            type="password"
-            placeholder="Type Your Password..."
-            className="input focus:outline-0 w-full my-2 rounded-xl"
-          />
-          {errors.password && (
-            <p className="text-red-400">{errors.password.message}</p>
-          )}
-
-          <input
-            {...register("rePassword")}
-            type="password"
-            placeholder="Confirm Password..."
-            className="input focus:outline-0 w-full my-2 rounded-xl"
-          />
-          {errors.rePassword && (
-            <p className="text-red-400">{errors.rePassword.message}</p>
-          )}
-
-          <input
-            {...register("dateOfBirth")}
-            type="Date"
-            placeholder="Type Your Date..."
-            className="input focus:outline-0 w-full my-2 rounded-xl"
-          />
-          {errors.dateOfBirth && (
-            <p className="text-red-400">{errors.dateOfBirth.message}</p>
-          )}
-          <div className="my-2">
-            <input
-              {...register("gender")}
-              type="radio"
-              name="gender"
-              id="male"
-              value="male"
-              className="radio radio-primary"
-            />
-            <label htmlFor="male" className="px-2">
-              Male
-            </label>
-            <input
-              {...register("gender")}
-              type="radio"
-              name="gender"
-              id="female"
-              value="female"
-              className="radio radio-primary"
-            />
-            <label htmlFor="female" className="px-2">
-              Female
-            </label>
+        {/* Header */}
+        <div className="mb-7">
+          <div className="w-10 h-10 bg-blue-700 rounded-xl flex items-center justify-center mb-4">
+            <span className="text-white font-black text-lg">S</span>
           </div>
-          {errors.gender && (
-            <p className="text-red-400">{errors.gender.message}</p>
-          )}
+          <h1 className="text-2xl font-bold text-gray-900">Create account</h1>
+          <p className="text-gray-500 text-sm mt-1">Join and start sharing today</p>
+        </div>
+
+        {/* Root error */}
+        {errors.root && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm">
+            {errors.root.message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+            <input
+              {...register("name")}
+              type="text"
+              placeholder="Ahmed Ali"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors"
+            />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+          </div>
+
+          {/* Username */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input
+              {...register("username")}
+              type="text"
+              placeholder="ahmed_ali"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors"
+            />
+            {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              {...register("email")}
+              type="email"
+              placeholder="you@example.com"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors"
+            />
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+          </div>
+
+          {/* Date of Birth */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date of birth</label>
+            <input
+              {...register("dateOfBirth")}
+              type="date"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors text-gray-600"
+            />
+            {errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth.message}</p>}
+          </div>
+
+          {/* Gender */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  {...register("gender")}
+                  type="radio"
+                  value="male"
+                  className="w-4 h-4 accent-blue-700"
+                />
+                <span className="text-sm text-gray-700">Male</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  {...register("gender")}
+                  type="radio"
+                  value="female"
+                  className="w-4 h-4 accent-blue-700"
+                />
+                <span className="text-sm text-gray-700">Female</span>
+              </label>
+            </div>
+            {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender.message}</p>}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              {...register("password")}
+              type="password"
+              placeholder="••••••••"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors"
+            />
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+            <input
+              {...register("rePassword")}
+              type="password"
+              placeholder="••••••••"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors"
+            />
+            {errors.rePassword && <p className="text-red-500 text-xs mt-1">{errors.rePassword.message}</p>}
+          </div>
+
+          {/* Submit */}
           <button
             disabled={isSubmitting}
             type="submit"
-            className="my-3 bg-blue-800 cursor-pointer text-white rounded-xl px-4 py-3"
+            className="w-full bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white font-medium py-2.5 rounded-xl text-sm transition-colors cursor-pointer mt-2"
           >
-            {isSubmitting ? "Loading...." : "SignUp"}
+            {isSubmitting ? "Creating account..." : "Create account"}
           </button>
         </form>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-700 font-medium hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
-    </>
+    </div>
   );
 }

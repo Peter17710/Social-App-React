@@ -9,9 +9,10 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://linked-posts.routemisr.com',
+        target: 'https://route-posts.routemisr.com',  // ← new domain
         changeOrigin: true,
-        secure: true
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       }
     }
   }

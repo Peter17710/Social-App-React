@@ -1,90 +1,107 @@
 import React, { useContext } from "react";
-import styles from "./Login.module.css";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TokenContext } from "../../Context/TokenContext";
 
 export default function Login() {
-  let navigate = useNavigate();
-  let {token , setToken} = useContext(TokenContext);
-  
-  
-  let schema = z.object({
-    email: z.string().email("Email not Valid").nonempty("Email is Required"),
-    password: z
-      .string()
-      .nonempty("Password is Required")
-      .regex(/^[A-Z][a-z0-9]{3,8}/, "Password must start with capital char"),
+  const navigate = useNavigate();
+  const { setToken } = useContext(TokenContext);
+
+  const schema = z.object({
+    login: z.string().nonempty("Email or username is required"),
+    password: z.string().nonempty("Password is required"),
   });
 
-  let {
+  const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm({
-    resolver: zodResolver(schema),
-  });
+  } = useForm({ resolver: zodResolver(schema) });
+
   async function onSubmit(values) {
     try {
-      console.log(values);
-      let { data } = await axios.post(
-        "/api/users/signin",
-        values
-      );
-      console.log(data);
-      //  save token to local storage
-
-      // all components (state  => )
-      if (data.message == "success") {
-        localStorage.setItem("userToken", data.token);
-        //  save token to context
-        setToken(data.token)
+      const { data } = await axios.post("/api/users/signin", values);
+      if (data.success === true) {
+        localStorage.setItem("userToken", data.data.token);
+        setToken(data.data.token);
         navigate("/");
       }
     } catch (error) {
-      console.log(error.response.data.error);
-      setError("root", { message: error.response.data.error });
+      console.log(error.response?.data); // ← add this
+      setError("root", {
+        message: error.response?.data?.message || "Invalid email or password",
+      });
     }
   }
+
   return (
-    <>
-      <div className="w-1/2 mx-auto shadow-lg p-5 my-5">
-        <h1 className="text-blue-800 font-bold text-2xl my-4">Login Now</h1>
-        {errors.root && <p className="text-red-400">{errors.root.message}</p>}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-sm border border-gray-100 p-8">
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="Type Your Email..."
-            className="input focus:outline-0 w-full my-2 rounded-xl"
-          />
-          {errors.email && (
-            <p className="text-red-400">{errors.email.message}</p>
-          )}
-          <input
-            {...register("password")}
-            type="password"
-            placeholder="Type Your Password..."
-            className="input focus:outline-0 w-full my-2 rounded-xl"
-          />
-          {errors.password && (
-            <p className="text-red-400">{errors.password.message}</p>
-          )}
+        {/* Header */}
+        <div className="mb-7">
+          <div className="w-10 h-10 bg-blue-700 rounded-xl flex items-center justify-center mb-4">
+            <span className="text-white font-black text-lg">S</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+          <p className="text-gray-500 text-sm mt-1">Sign in to your account</p>
+        </div>
 
+        {/* Root error */}
+        {errors.root && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm">
+            {errors.root.message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Login */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email or Username</label>
+            <input
+              {...register("login")}
+              type="text"
+              placeholder="you@example.com or your_username"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors"
+            />
+            {errors.login && <p className="text-red-500 text-xs mt-1">{errors.login.message}</p>}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              {...register("password")}
+              type="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-colors"
+            />
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+          </div>
+
+          {/* Submit */}
           <button
             disabled={isSubmitting}
             type="submit"
-            className="my-3 bg-blue-800 cursor-pointer text-white rounded-xl px-4 py-3"
+            className="w-full bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white font-medium py-2.5 rounded-xl text-sm transition-colors cursor-pointer mt-2"
           >
-            {isSubmitting ? "Loading...." : "Login"}
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-blue-700 font-medium hover:underline">
+            Sign up
+          </Link>
+        </p>
       </div>
-    </>
+    </div>
   );
 }
